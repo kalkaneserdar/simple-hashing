@@ -1,5 +1,3 @@
-// import crypto from "crypto";
-// import hashring from "hashring";
 const prompt = require('prompt');
 const crypto = require('crypto');
 const hashring = require('hashring');
@@ -16,20 +14,27 @@ prompt.get(['username', 'email'], function (err, result) {
   if (err) {
     return onErr(err);
   }
-  
-  const hashOrigin = result.username + result.email;
-  const userId = crypto.createHash('sha256').update(hashOrigin).digest('base64').substring(0, 5);
-  const server = hr.get(userId);
-  
+
+  // Calling userIdGEnerator function to populate user attributes.
+  // Bespoke function uses crypto and hashring packages to create unique user ids and 
+  // assure persistence in the correct server in a consistent way.
+  const userAttributes = userIdGenerator(result.username, result.email);
+
   console.log('Command-line input received:');
   console.log('  Username: ' + result.username);
   console.log('  Email: ' + result.email);
-//   console.log('  User Hash Key: ' + hash);
-  console.log('  User Id: ' + userId);
-  console.log('  Server of the User: ' + server);
+  console.log('  User Id: ' + userAttributes.userId);
+  console.log('  Server of the User: ' + userAttributes.server);
 });
 
 function onErr(err) {
   console.log(err);
   return 1;
 }
+
+function userIdGenerator(p1, p2){
+  let hashOrigin = p1 + p2;
+  let userId = crypto.createHash('sha256').update(hashOrigin).digest('base64').substring(0, 5);
+  let server = hr.get(userId);
+  return {userId, server};
+};
